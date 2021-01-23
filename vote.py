@@ -17,8 +17,11 @@ gSigner = "signer@cs-hva.nl"
 
 
 def sign(data, signer=gSigner, sfx='.prv'):
-    if isinstance(data, io.StringIO): data = data.read()
-    if not isinstance(data, bytes): data = bytes(data, encoding='utf-8')
+    if isinstance(data, io.StringIO):
+        data = data.read()
+
+    if not isinstance(data, bytes):
+        data = bytes(data, encoding='utf-8')
 
     sign = b''
     # Calculate the signature of the data using a prvKey, sha256, pkcs1 en rsa-2048
@@ -26,12 +29,12 @@ def sign(data, signer=gSigner, sfx='.prv'):
     with io.open(signer+'.prv', "rb") as fp:  # reads in the private key as fp (read object)
         prvKey = serialization.load_pem_private_key(fp.read(), password=None)  # sets private key as prvKey-
         # (serialization) write key into bytes
-    sign = prvKey.sign(
+    sign = prvKey.sign(  # RSA private key object
         data,
         padding.PKCS1v15(),
         hashes.SHA256(),
     )
-    # Student Work {{
+    # Student Work }}
 
     return ':'.join(['#sign', 'sha256-PKCS1-rsa2048', signer, sign.hex()])
 
@@ -102,7 +105,7 @@ def load_voters(fname):
 
 def load_candidates(fname):
     try:
-        candidates = { s['mdwId']: s for s in csv.DictReader(load_file(fname), delimiter=';') }
+        candidates = {s['mdwId']: s for s in csv.DictReader(load_file(fname), delimiter=';') }
         return candidates
     except Exception as e:
         return {}
@@ -190,7 +193,7 @@ if __name__ == '__main__':
         if opt == '-h':
             print('Usage: vote --create')
             print('\tInitialize vote system')
-            print('Usage: vote --vote -p <persId> -c <candId>')
+            print('Usage: vote --vote -p <voteId> -c <candId>')
             print('\tCast vote')
             print('Usage: vote --res')
             print('\tShow results')
@@ -201,7 +204,7 @@ if __name__ == '__main__':
             sys.exit()
         if opt == '-D': gDbg = True
 
-        if opt == '-p': persId = arg
+        if opt == '-p': voteId = arg
         if opt == '-c': candId = arg
         if opt[0:2] == '--': cmd = opt[2:]
 
