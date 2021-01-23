@@ -40,9 +40,14 @@ def sign(data, signer=gSigner, sfx='.prv'):
 
 
 def verify(data, signature, signer=gSigner, sfx='.pub'):
-    if isinstance(data, io.StringIO): data = data.read()
-    if not isinstance(data, bytes): data = bytes(data, encoding='utf-8')
+    if isinstance(data, io.StringIO):
+        data = data.read()
+
+    if not isinstance(data, bytes):
+        data = bytes(data, encoding='utf-8')
+
     flds = signature.split(':')
+
     if flds[1] != 'sha256-PKCS1-rsa2048' and flds[2] != signer:
         print('Error: Unknown signature:', signature)
         return None
@@ -213,13 +218,14 @@ if __name__ == '__main__':
         voting.create()
     if cmd == 'vote':
         reciept = voting.vote(voteId, candId)
-        if reciept: print(reciept)
+        if reciept:
+            print(reciept)
     if cmd == 'res':
         voting.audit()
         for res in voting.results()[:3]:
             print('{0:3s}: {1:3d}'.format(res[0], res[1]))
     if cmd == 'stat':
-        print(voting.stat())
+        print(voting.stats())
     if cmd == 'delete':
         voting.delete()
 
