@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 gDbg = False
 gSigner = "signer@cs-hva.nl"
 
+
 def sign(data, signer=gSigner, sfx='.prv'):
     if isinstance(data, io.StringIO): data = data.read()
     if not isinstance(data, bytes): data = bytes(data, encoding='utf-8')
@@ -22,8 +23,9 @@ def sign(data, signer=gSigner, sfx='.prv'):
     sign = b''
     # Calculate the signature of the data using a prvKey, sha256, pkcs1 en rsa-2048
     # Student Work {{
-    with io.open(signer+'.prv', "rb") as fp:
-        prvKey = serialization.load_pem_private_key(fp.read(), password=None)
+    with io.open(signer+'.prv', "rb") as fp:  # reads in the private key as fp (read object)
+        prvKey = serialization.load_pem_private_key(fp.read(), password=None)  # sets private key as prvKey-
+        # (serialization) write key into bytes
     sign = prvKey.sign(
         data,
         padding.PKCS1v15(),
@@ -32,6 +34,7 @@ def sign(data, signer=gSigner, sfx='.prv'):
     # Student Work {{
 
     return ':'.join(['#sign', 'sha256-PKCS1-rsa2048', signer, sign.hex()])
+
 
 def verify(data, signature, signer=gSigner, sfx='.pub'):
     if isinstance(data, io.StringIO): data = data.read()
@@ -64,7 +67,7 @@ def verify(data, signature, signer=gSigner, sfx='.pub'):
     return res
 
 
-def loadFile(fname, useSign=True, signer=gSigner):
+def load_file(fname, useSign=True, signer=gSigner):
     """ Load file check signature """
     data = io.open(fname, 'r', encoding='UTF-8').read()
     n = data.find('#sign')
@@ -76,7 +79,8 @@ def loadFile(fname, useSign=True, signer=gSigner):
             if not res: return None
     return io.StringIO(data)
 
-def saveFile(fname, data, useSign=True, signer=gSigner):
+
+def save_file(fname, data, useSign=True, signer=gSigner):
     """ Save file check signature """
     if isinstance(data, io.StringIO): data = data.read()
     n = data.find('#sign')
@@ -88,16 +92,17 @@ def saveFile(fname, data, useSign=True, signer=gSigner):
     return
 
 
-def loadVoters(fname):
+def load_voters(fname):
     try:
-        voters = { s['studNr']: s for s in csv.DictReader(loadFile(fname), delimiter=';') }
+        voters = { s['studNr']: s for s in csv.DictReader(load_file(fname), delimiter=';') }
         return voters
     except Exception as e:
         return {}
 
-def loadCandidates(fname):
+
+def load_candidates(fname):
     try:
-        candidates = { s['mdwId']: s for s in csv.DictReader(loadFile(fname), delimiter=';') }
+        candidates = { s['mdwId']: s for s in csv.DictReader(load_file(fname), delimiter=';') }
         return candidates
     except Exception as e:
         return {}
@@ -105,6 +110,8 @@ def loadCandidates(fname):
 # This is non-secure version of Voting.
 # Make it more secure
 # Does ir follow your Constrains (Randvoorwaarden)
+
+
 class Vote:
     _voters = []
     _casts = []
@@ -138,14 +145,13 @@ class Vote:
             self._casts.append(candId)
         return f'Voter: {voteId} voted {candId} at {now}'
 
-
     def results(self):
         votes = collections.Counter(self._casts)
         return votes.most_common()
 
     def audit(self):
-        saveFile('audit_cand.json', json.dumps(self._casts))
-        saveFile('audit_vote.json', json.dumps(self._voters))
+        save_file('audit_cand.json', json.dumps(self._casts))
+        save_file('audit_vote.json', json.dumps(self._voters))
         if gDbg: print("DEBUG: saved audit-trail")
 
     def create(self):
@@ -174,8 +180,9 @@ class Vote:
                 'casts': len(self._casts),
         }
 
-gVoters = loadVoters('voters.csv')
-gCandidates = loadCandidates('candidates.csv')
+
+gVoters = load_voters('voters.csv')
+gCandidates = load_candidates('candidates.csv')
 if __name__ == '__main__':
     cmd = ''
     opts, args = getopt.getopt(sys.argv[1:], 'hp:c:', [ 'create', 'vote', 'res', 'stat', 'delete' ])
