@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
+import state_handler
 gDbg = False
 gSigner = "signer@cs-hva.nl"
 
@@ -24,17 +25,10 @@ def sign(data, signer=gSigner, sfx='.prv'):
         data = bytes(data, encoding='utf-8')
 
     sign = b''
-    # Calculate the signature of the data using a prvKey, sha256, pkcs1 en rsa-2048
-    # Student Work {{
-    with io.open(signer+'.prv', "rb") as fp:  # reads in the private key as fp (read object)
-        prvKey = serialization.load_pem_private_key(fp.read(), password=None)  # sets private key as prvKey-
-        # (serialization) write key into bytes
-    sign = prvKey.sign(  # RSA private key object
-        data,
-        padding.PKCS1v15(),
-        hashes.SHA256(),
-    )
-    # Student Work }}
+
+    with io.open(signer+'.prv', "rb") as fp:
+        prvKey = serialization.load_pem_private_key(fp.read(), password=None)
+    sign = prvKey.sign(data, padding.PKCS1v15(), hashes.SHA256())
 
     return ':'.join(['#sign', 'sha256-PKCS1-rsa2048', signer, sign.hex()])
 
@@ -149,8 +143,10 @@ class Vote:
 
         now = datetime.datetime.now()
         if voteId in gVoters and candId in gCandidates:
+            state_handler.decrypt_state_file()
             self._voters.append(voteId)
             self._casts.append(candId)
+            state_handler.encrypt_state_file()
         return f'Voter: {voteId} voted {candId} at {now}'
 
     def results(self):
