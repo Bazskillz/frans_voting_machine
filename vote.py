@@ -1,12 +1,12 @@
+#!/usr/bin/env python
+
 import sys, os
 import getopt
 import io
 import csv
 import datetime
-import random
 import collections
 import json
-import pprint
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
@@ -122,6 +122,7 @@ class Vote:
         fname = 'vote'+'.state'
         if os.path.exists(fname):
             # Recover saved state
+            state_handler.decrypt_state_file()
             jDct = json.load(io.open(fname, 'r'))
             self._voters = jDct['voters']
             self._casts = jDct['casts']
@@ -130,9 +131,11 @@ class Vote:
     def __del__(self):
         # Save state
         fname = 'vote'+'.state'
-        jDct = { 'voters': self._voters, 'casts':  self._casts }
+        jDct = {'voters': self._voters, 'casts':  self._casts}
         json.dump(jDct, io.open(fname, 'w'))
-        if gDbg: print('DEBUG: saved state:', fname)
+        state_handler.encrypt_state_file()
+        if gDbg:
+            print('DEBUG: saved state:', fname)
 
     def vote(self, voteId, candId):
         # Do some checks about voters and candidates
@@ -140,13 +143,11 @@ class Vote:
         if voteId in self._voters:
             print('Error: Mutiple vote: {}'.format(voteId))
         # StudentWork }}
-
         now = datetime.datetime.now()
+
         if voteId in gVoters and candId in gCandidates:
-            state_handler.decrypt_state_file()
             self._voters.append(voteId)
             self._casts.append(candId)
-            state_handler.encrypt_state_file()
         return f'Voter: {voteId} voted {candId} at {now}'
 
     def results(self):
@@ -156,7 +157,8 @@ class Vote:
     def audit(self):
         save_file('audit_cand.json', json.dumps(self._casts))
         save_file('audit_vote.json', json.dumps(self._voters))
-        if gDbg: print("DEBUG: saved audit-trail")
+        if gDbg:
+            print("DEBUG: saved audit-trail")
 
     def create(self):
         # Reinitialize state

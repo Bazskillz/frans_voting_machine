@@ -1,4 +1,6 @@
 import io
+import os
+import json
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
@@ -7,6 +9,11 @@ from cryptography.hazmat.primitives.asymmetric import padding
 
 gSigner = "signer@cs-hva.nl"
 vote_state_file = "vote.state"
+
+
+def read_casts():
+    json_dict = json.load(io.open(vote_state_file, 'r'))
+    return json_dict['casts']
 
 
 def read_public():
@@ -28,39 +35,36 @@ def read_private():
     return serialized_prv_key
 
 
-def encrypt_state(state):
-    if isinstance(state, io.StringIO):
-        state = state.read()
-
-    if not isinstance(state, bytes):
-        state = bytes(state, encoding='utf-8')
-
-    with open(state, 'rb') as state:
-        votes = state.read()
-    encrypted_votes = read_public().encrypt(
-        votes,
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None
-        )
-    )
-    return encrypted_votes
-
-
-def write_encrypted_state():
-    with open(vote_state_file, 'wb') as w_state:
-        w_state.write(encrypt_state(vote_state_file))
+def encrypt_state_file():
+    if os.path.exists(vote_state_file):
+        with io.open(vote_state_file, 'rb') as read_state:
+            encrypted_state_bytes = read_public().encrypt(read_state.read(),
+                                                          padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                                                                       algorithm=hashes.SHA256(), label=None))
+        with io.open(vote_state_file, 'wb') as write_state:
+            write_state.write(encrypted_state_bytes)
 
 
 def decrypt_state_file():
-    with open(vote_state_file, 'rb') as r_state:
-        import pdb; pdb.set_trace()
-        decrypted = read_private().decrypt(
-            r_state.read(),
-            padding.OAEP(padding.MGF1(algorithm=hashes.SHA256()),
-                         algorithm=hashes.SHA256(),
-                         label=None,
-                         )
+    decrypted_state_bytes = []
+    if os.path.exists(vote_state_file):
+        with io.open(vote_state_file, 'rb') as read_state:
+            decrypted_state_bytes = read_private().decrypt(
+                read_state.read(),
+                padding.OAEP(padding.MGF1(algorithm=hashes.SHA256()),
+                             algorithm=hashes.SHA256(),
+                             label=None,
+                             )
             )
-        return decrypted
+    with io.open(vote_state_file, 'wb') as write_state:
+        write_state.write(decrypted_state_bytes)
+
+
+def write_encrypted_state():
+    json_dict = {'voters': encrypt_state_file(), 'casts': read_casts()}
+    json.dump(json_dict, io.open(vote_state_file, 'w'))
+
+
+def write_decrypted_state():
+    json_dict = {'voters': decrypt_state_file(), 'casts': read_casts()}
+    json.dump(json_dict, io.open(vote_state_file, 'w'))
