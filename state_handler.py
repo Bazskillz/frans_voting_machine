@@ -75,8 +75,7 @@ def decrypt_state_file():
 
 # def encrypt_log_file():
 #     """
-#     Reads out the vote.state file, encrypts the bytes, then writes those back over the state file. \
-#     And initiates the update_hash_file function over the current vote.state
+#     Reads out the vote.log file, encrypts the bytes, then writes those back over the log file.
 #     """
 #     if os.path.exists('vote.log'):
 #         with io.open('vote.log', 'rb') as read_state:
