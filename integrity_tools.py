@@ -10,6 +10,10 @@ gSigner = "signer@cs-hva.nl"
 
 
 def read_public():
+    """
+    Returns serialized public key object.
+    @return: serialized public key object
+    """
     with open(gSigner+'.pub', 'rb') as key:
         serialized_pub_key = serialization.load_pem_public_key(
             key.read(),
@@ -19,6 +23,10 @@ def read_public():
 
 
 def read_private():
+    """
+    Returns serialized private key object.
+    @return: serialized private key object
+    """
     with open(gSigner+'.prv', 'rb') as key:
         serialized_prv_key = serialization.load_pem_private_key(
             key.read(),
@@ -29,6 +37,11 @@ def read_private():
 
 
 def sign_data(data, signer=gSigner):
+    """
+    @param data: the input data for the signing
+    @param signer: The signing entity
+    @return: hexadecimal notation of the SHA256 signature calculated over the input data
+    """
     if isinstance(data, io.StringIO):
         data = data.read()
 
@@ -45,6 +58,10 @@ def sign_data(data, signer=gSigner):
 
 
 def create_state_hash():
+    """
+    returns hexadecimal sha256 signature of vote.state
+    @return: hexadecimal sha256 signature of vote.state
+    """
     vote_state = b''
     if os.path.exists('vote.state'):
         with io.open('vote.state', 'rb') as read_state:
@@ -53,6 +70,22 @@ def create_state_hash():
 
 
 def update_hash_file():
+    """
+    Writes the sha256 signature of vote.state to vote_state.hash
+    """
     state_hash = create_state_hash()
     with io.open('vote_state.hash', 'w') as write_hash:
         write_hash.write(state_hash)
+
+
+def verify_hash():
+    """
+    verifies the sha256 signature of vote.state in vote_state.hash originated from origin sender
+    https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa.html#verification
+
+    gebruik read_public() als public_key, zorg dat de signature die je
+    uit vote_state.hash leest, in het goeie formaat is voor de functie in de documentatie.
+
+
+    """
+    pass

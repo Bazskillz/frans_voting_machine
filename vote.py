@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
 import state_handler
+import integrity_tools
 
 gDbg = False
 gSigner = "signer@cs-hva.nl"
@@ -164,6 +165,13 @@ class Vote:
     def audit(self):
         save_file('audit_cand.json', json.dumps(self._casts))
         save_file('audit_vote.json', json.dumps(self._voters))
+
+        if os.path.exists('vote_state.hash'):
+            if integrity_tools.verify_hash():
+                print("The signature calculated over vote.state was authentic!")
+            else:
+                print("The given signature was not authentic.")
+
         if gDbg: print("DEBUG: saved audit-trail")
 
     def create(self):
