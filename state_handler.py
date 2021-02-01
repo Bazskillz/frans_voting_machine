@@ -7,6 +7,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import padding
 
+import integrity_tools
+
 gSigner = "signer@cs-hva.nl"
 vote_state_file = "vote.state"
 
@@ -35,7 +37,7 @@ def read_private():
     return serialized_prv_key
 
 
-def encrypt_state_file():
+def write_encrypted_state():
     if os.path.exists(vote_state_file):
         with io.open(vote_state_file, 'rb') as read_state:
             encrypted_state_bytes = read_public().encrypt(read_state.read(),
@@ -43,6 +45,7 @@ def encrypt_state_file():
                                                                        algorithm=hashes.SHA256(), label=None))
         with io.open(vote_state_file, 'wb') as write_state:
             write_state.write(encrypted_state_bytes)
+    integrity_tools.update_hash_file()
 
 
 def decrypt_state_file():
@@ -59,11 +62,6 @@ def decrypt_state_file():
             )
     with io.open(vote_state_file, 'wb') as write_state:
         write_state.write(decrypted_state_bytes)
-
-
-def write_encrypted_state():
-    json_dict = {'voters': encrypt_state_file(), 'casts': read_casts()}
-    json.dump(json_dict, io.open(vote_state_file, 'w'))
 
 
 def write_decrypted_state():
