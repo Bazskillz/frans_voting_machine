@@ -63,7 +63,3 @@ def decrypt_state_file():
     with io.open(vote_state_file, 'wb') as write_state:
         write_state.write(decrypted_state_bytes)
 
-
-def write_decrypted_state():
-    json_dict = {'voters': decrypt_state_file(), 'casts': read_casts()}
-    json.dump(json_dict, io.open(vote_state_file, 'w'))
