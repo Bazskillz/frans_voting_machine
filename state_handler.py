@@ -53,14 +53,18 @@ def write_encrypted_state():
         w_state.write(encrypt_state(vote_state_file))
 
 
-def decrypt_state_file():
+def get_encrypted_state_file():
     with open(vote_state_file, 'rb') as r_state:
-        import pdb; pdb.set_trace()
-        decrypted = read_private().decrypt(
-            r_state.read(),
-            padding.OAEP(padding.MGF1(algorithm=hashes.SHA256()),
-                         algorithm=hashes.SHA256(),
-                         label=None,
-                         )
-            )
-        return decrypted
+        encrypted_bytes = r_state.read()
+    return encrypted_bytes
+
+
+def decrypt_state_file():
+    decrypted = read_private().decrypt(
+        get_encrypted_state_file(),
+        padding.OAEP(padding.MGF1(algorithm=hashes.SHA256()),
+                     algorithm=hashes.SHA256(),
+                     label=None,
+                     )
+    )
+    return decrypted

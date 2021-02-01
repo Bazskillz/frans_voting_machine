@@ -146,7 +146,6 @@ class Vote:
             state_handler.decrypt_state_file()
             self._voters.append(voteId)
             self._casts.append(candId)
-            state_handler.encrypt_state_file()
         return f'Voter: {voteId} voted {candId} at {now}'
 
     def results(self):
