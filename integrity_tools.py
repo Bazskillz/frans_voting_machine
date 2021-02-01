@@ -76,16 +76,3 @@ def update_hash_file():
     state_hash = create_state_hash()
     with io.open('vote_state.hash', 'w') as write_hash:
         write_hash.write(state_hash)
-
-
-def verify_hash():
-    """
-    verifies the sha256 signature of vote.state in vote_state.hash originated from origin sender
-    https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa.html#verification
-
-    gebruik read_public() als public_key, zorg dat de signature die je
-    uit vote_state.hash leest, in het goeie formaat is voor de functie in de documentatie.
-
-
-    """
-    pass

@@ -3,10 +3,8 @@ import getopt
 import io
 import csv
 import datetime
-import random
 import collections
 import json
-import pprint
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
@@ -105,7 +103,7 @@ def save_file(fname, data, useSign=True, signer=gSigner):
 
 def load_voters(fname):
     try:
-        voters = { s['studNr']: s for s in csv.DictReader(load_file(fname), delimiter=';') }
+        voters = {s['studNr']: s for s in csv.DictReader(load_file(fname), delimiter=';') }
         return voters
     except Exception as e:
         return {}
@@ -165,12 +163,6 @@ class Vote:
     def audit(self):
         save_file('audit_cand.json', json.dumps(self._casts))
         save_file('audit_vote.json', json.dumps(self._voters))
-
-        if os.path.exists('vote_state.hash'):
-            if integrity_tools.verify_hash():
-                print("The signature calculated over vote.state was authentic!")
-            else:
-                print("The given signature was not authentic.")
 
         if gDbg: print("DEBUG: saved audit-trail")
 

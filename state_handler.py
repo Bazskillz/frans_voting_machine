@@ -42,7 +42,8 @@ def read_private():
 
 def write_encrypted_state():
     """
-    Reads out the vote.state file, encrypts the bytes, then writes those back over the state file
+    Reads out the vote.state file, encrypts the bytes, then writes those back over the state file. \
+    And initiates the update_hash_file function over the current vote.state
     """
     if os.path.exists(vote_state_file):
         with io.open(vote_state_file, 'rb') as read_state:
