@@ -1,6 +1,5 @@
 import io
 import os
-import json
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
@@ -72,3 +71,34 @@ def decrypt_state_file():
             )
     with io.open(vote_state_file, 'wb') as write_state:
         write_state.write(decrypted_state_bytes)
+
+
+# def encrypt_log_file():
+#     """
+#     Reads out the vote.state file, encrypts the bytes, then writes those back over the state file. \
+#     And initiates the update_hash_file function over the current vote.state
+#     """
+#     if os.path.exists('vote.log'):
+#         with io.open('vote.log', 'rb') as read_state:
+#             encrypted_state_bytes = read_public().encrypt(read_state.read(),
+#                                                           padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
+#                                                                        algorithm=hashes.SHA256(), label=None))
+#         with io.open('vote.log', 'wb') as write_state:
+#             write_state.write(encrypted_state_bytes)
+#
+#
+# def decrypt_log_file():
+#     """
+#     Reads the encrypted log file, decrypts it and writes it back into vote.log
+#     """
+#     plaintext_log_bytes = b''
+#     encrypted_state_bytes = b''
+#     if os.path.exists('vote.log'):
+#
+#         with io.open('vote.log', 'rb') as read_state:
+#             encrypted_state_bytes = read_state.read()
+#         plaintext_log_bytes = read_private().decrypt(encrypted_state_bytes,
+#                                                       padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
+#                                                                    algorithm=hashes.SHA256(), label=None))
+#         with io.open('vote.log', 'wb') as write_log:
+#             write_log.write(plaintext_log_bytes)

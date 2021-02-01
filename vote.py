@@ -127,8 +127,11 @@ class Vote:
 
     def __init__(self):
         fname = 'vote'+'.state'
-        state_handler.decrypt_state_file()
+        if os.path.exists('vote.log'):
+            pass
+            # state_handler.decrypt_log_file()
         if os.path.exists(fname):
+            state_handler.decrypt_state_file()
             # Recover saved state
             jDct = json.load(io.open(fname, 'r'))
             self._voters = jDct['voters']
@@ -141,20 +144,26 @@ class Vote:
         jDct = {'voters': self._voters, 'casts':  self._casts}
         json.dump(jDct, io.open(fname, 'w'))
         state_handler.write_encrypted_state()
+        # state_handler.encrypt_log_file()
         if gDbg:
             print('DEBUG: saved state:', fname)
 
     def vote(self, voteId, candId):
-
+        now = datetime.datetime.now()
         if voteId in self._voters:
             print('Error: Mutiple vote: {}'.format(voteId))
-        # StudentWork }}
+            self.vote_accountability(f'Voter: {voteId} unsuccessfully tried to vote for {candId} at {now}\n')
+        else:
+            if voteId in gVoters and candId in gCandidates:
+                self._voters.append(voteId)
+                self._casts.append(candId)
+                self.vote_accountability(f'Voter: {voteId} voted {candId} at {now}\n')
+            return f'Voter: {voteId} voted {candId} at {now}'
 
-        now = datetime.datetime.now()
-        if voteId in gVoters and candId in gCandidates:
-            self._voters.append(voteId)
-            self._casts.append(candId)
-        return f'Voter: {voteId} voted {candId} at {now}'
+    @staticmethod
+    def vote_accountability(vote_data):
+        with io.open('vote.log', 'a') as append_log:
+            append_log.write(vote_data)
 
     def results(self):
         votes = collections.Counter(self._casts)
