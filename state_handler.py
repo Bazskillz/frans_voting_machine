@@ -49,8 +49,9 @@ def decrypt_state_file():
     decrypted_state_bytes = []
     if os.path.exists(vote_state_file):
         with io.open(vote_state_file, 'rb') as read_state:
+            encrypted_bytes = read_state.read()
             decrypted_state_bytes = read_private().decrypt(
-                read_state.read(),
+                encrypted_bytes,
                 padding.OAEP(padding.MGF1(algorithm=hashes.SHA256()),
                              algorithm=hashes.SHA256(),
                              label=None,
