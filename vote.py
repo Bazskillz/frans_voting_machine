@@ -12,6 +12,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
+import state_handler
+
 gDbg = False
 gSigner = "signer@cs-hva.nl"
 
@@ -126,6 +128,7 @@ class Vote:
 
     def __init__(self):
         fname = 'vote'+'.state'
+        state_handler.decrypt_state_file()
         if os.path.exists(fname):
             # Recover saved state
             jDct = json.load(io.open(fname, 'r'))
