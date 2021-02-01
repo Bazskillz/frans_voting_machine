@@ -11,7 +11,6 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
 import state_handler
-import integrity_tools
 
 gDbg = False
 gSigner = "signer@cs-hva.nl"
@@ -162,6 +161,10 @@ class Vote:
 
     @staticmethod
     def vote_accountability(vote_data):
+        """
+        append voting log entry to vote.log
+        @param vote_data:
+        """
         with io.open('vote.log', 'a') as append_log:
             append_log.write(vote_data)
 
