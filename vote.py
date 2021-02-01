@@ -136,13 +136,14 @@ class Vote:
     def __del__(self):
         # Save state
         fname = 'vote'+'.state'
-        jDct = { 'voters': self._voters, 'casts':  self._casts }
+        jDct = {'voters': self._voters, 'casts':  self._casts}
         json.dump(jDct, io.open(fname, 'w'))
-        if gDbg: print('DEBUG: saved state:', fname)
+        state_handler.write_encrypted_state()
+        if gDbg:
+            print('DEBUG: saved state:', fname)
 
     def vote(self, voteId, candId):
-        # Do some checks about voters and candidates
-        # StudentWork {{
+
         if voteId in self._voters:
             print('Error: Mutiple vote: {}'.format(voteId))
         # StudentWork }}
