@@ -1,17 +1,18 @@
+#!/usr/bin/env python
+
 import sys, os
 import getopt
 import io
 import csv
 import datetime
-import random
 import collections
 import json
-import pprint
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
+import state_handler
 gDbg = False
 gSigner = "signer@cs-hva.nl"
 
@@ -24,17 +25,10 @@ def sign(data, signer=gSigner, sfx='.prv'):
         data = bytes(data, encoding='utf-8')
 
     sign = b''
-    # Calculate the signature of the data using a prvKey, sha256, pkcs1 en rsa-2048
-    # Student Work {{
-    with io.open(signer+'.prv', "rb") as fp:  # reads in the private key as fp (read object)
-        prvKey = serialization.load_pem_private_key(fp.read(), password=None)  # sets private key as prvKey-
-        # (serialization) write key into bytes
-    sign = prvKey.sign(  # RSA private key object
-        data,
-        padding.PKCS1v15(),
-        hashes.SHA256(),
-    )
-    # Student Work }}
+
+    with io.open(signer+'.prv', "rb") as fp:
+        prvKey = serialization.load_pem_private_key(fp.read(), password=None)
+    sign = prvKey.sign(data, padding.PKCS1v15(), hashes.SHA256())
 
     return ':'.join(['#sign', 'sha256-PKCS1-rsa2048', signer, sign.hex()])
 
@@ -128,6 +122,7 @@ class Vote:
         fname = 'vote'+'.state'
         if os.path.exists(fname):
             # Recover saved state
+            state_handler.decrypt_state_file()
             jDct = json.load(io.open(fname, 'r'))
             self._voters = jDct['voters']
             self._casts = jDct['casts']
@@ -136,18 +131,19 @@ class Vote:
     def __del__(self):
         # Save state
         fname = 'vote'+'.state'
-        jDct = { 'voters': self._voters, 'casts':  self._casts }
+        jDct = {'voters': self._voters, 'casts':  self._casts}
         json.dump(jDct, io.open(fname, 'w'))
-        if gDbg: print('DEBUG: saved state:', fname)
+        state_handler.write_encrypted_state()
+        if gDbg:
+            print('DEBUG: saved state:', fname)
 
     def vote(self, voteId, candId):
-        # Do some checks about voters and candidates
-        # StudentWork {{
+
         if voteId in self._voters:
             print('Error: Mutiple vote: {}'.format(voteId))
         # StudentWork }}
-
         now = datetime.datetime.now()
+
         if voteId in gVoters and candId in gCandidates:
             self._voters.append(voteId)
             self._casts.append(candId)
@@ -160,7 +156,8 @@ class Vote:
     def audit(self):
         save_file('audit_cand.json', json.dumps(self._casts))
         save_file('audit_vote.json', json.dumps(self._voters))
-        if gDbg: print("DEBUG: saved audit-trail")
+        if gDbg:
+            print("DEBUG: saved audit-trail")
 
     def create(self):
         # Reinitialize state
